@@ -19,12 +19,14 @@ public class GameMap extends JPanel {
     private int[][] minen;
     private int[][] arroundMinen;
     private boolean[][] visible;
+    private boolean[][] flags;
 
     public GameMap() {
-        setBackground(Color.lightGray);
+        setBackground(Color.WHITE);
         minen = new int[FIELD_SIZE][FIELD_SIZE];
         arroundMinen = new int[FIELD_SIZE][FIELD_SIZE];
         visible = new boolean[FIELD_SIZE][FIELD_SIZE];
+        flags = new boolean[FIELD_SIZE][FIELD_SIZE];
         for (int i = 0; i < MINES_COUNT; i++) {
             int x, y;
             do {
@@ -45,9 +47,24 @@ public class GameMap extends JPanel {
                 super.mouseReleased(e);
                 int x = e.getX() / CELL_SIZE;
                 int y = e.getY() / CELL_SIZE;
-                if (minen[x][y] == 1) gameOver = true;
-                if (minen[x][y] == 0) {
-                    if (arroundMinen[x][y] > 0) visible[x][y] = true;
+                if (e.getButton() == MouseEvent.BUTTON1) {
+
+                    if (minen[x][y] == 1) {
+                        gameOver = true;
+                    }
+                    if (minen[x][y] == 0 && !flags[x][y]) {
+                        if (arroundMinen[x][y] > 0) {
+                            visible[x][y] = true;
+                        }
+                        if (arroundMinen[x][y] == 0){
+                            visible[x][y] = true;
+                        }
+                    }
+                }
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    if (visible[x][y] == false) {
+                        flags[x][y] = !flags[x][y];
+                    }
                 }
                 repaint();
             }
@@ -79,9 +96,13 @@ public class GameMap extends JPanel {
         for (int i = 0; i < FIELD_SIZE; i++) {
             for (int j = 0; j < FIELD_SIZE; j++) {
 
-                if (visible[i][j] && minen[i][j] == 0 && arroundMinen[i][j] > 0) {
-                    g.setColor(Color.LIGHT_GRAY);
-                    g.drawString(String.valueOf(arroundMinen[i][j]), i * CELL_SIZE + 6, j * CELL_SIZE + 22);
+                if (visible[i][j] && minen[i][j] == 0) {
+                    g.setColor(Color.GRAY);
+                    g.fillRect(i*CELL_SIZE, j*CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                    if (arroundMinen[i][j] > 0){
+                        g.setColor(Color.black);
+                        g.drawString(String.valueOf(arroundMinen[i][j]), i * CELL_SIZE + 6, j * CELL_SIZE + 22);
+                    }
                 } else {
                     g.setColor(Color.DARK_GRAY);
                     g.fillRect(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
@@ -90,10 +111,14 @@ public class GameMap extends JPanel {
                     g.setColor(Color.black);
                     g.fillOval(i * CELL_SIZE + 1, j * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
                 }
+                if (!gameOver && flags[i][j]) {
+                    g.setColor(Color.CYAN);
+                    g.fillRect(i * CELL_SIZE + 2, j * CELL_SIZE + 2, CELL_SIZE - 4, CELL_SIZE - 4);
+                }
             }
         }
+        g.setColor(Color.black);
         for (int i = 0; i < FIELD_SIZE; i++) {
-            g.setColor(Color.black);
             g.drawLine(0, i * CELL_SIZE, SIZE, i * CELL_SIZE);
             g.drawLine(i * CELL_SIZE, 0, i * CELL_SIZE, SIZE);
         }
